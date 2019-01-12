@@ -1,3 +1,69 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'SF Pro Display'
+}
+
 img {
   width: 100% !important;
 }
+
+.navbar {
+  padding: 20px 40px;
+  font-size: 2rem;
+  font-weight: 900;
+  background: #EFA00B;
+  color: #fff;
+  width: 100%;
+}
+
+.container {
+  margin: 0 auto;
+  width: 90%;
+}
+
+.sign-in {
+  margin: 0 auto;
+  width: 50%;
+  display: flex;
+  vertical-align: middle;
+}
+
+.btn {
+  margin: 10px auto;
+  font-weight: bolder;
+  background: #D65108;
+  border: 2px solid #D65108;
+  border-radius: 5px;
+  padding: 15px;
+  color: #fff;
+}
+
+.btn:hover {
+  background: #591F0A;  
+  border-color:#591F0A;
+  cursor: pointer;
+}
+
+
+.card-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.card {
+  padding: 30px;
+  margin: 10px;
+}
+
+/* .card-body {
+
+}
+
+.card-title {
+
+}
+
+.card-text {
+
+} */

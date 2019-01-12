@@ -40,8 +40,8 @@ function getAcessToken(code) {
     body: form
   }).then(res => res.json())
     .then(data => {
-      getSubscribedSubreddits(data.access_token);
-      // getSavedPosts(data.access_token);
+      // getSubscribedSubreddits(data.access_token);
+      getSavedPosts(data.access_token);
     })
     .catch(err => console.log("Error: " + err)) 
 }
@@ -88,12 +88,13 @@ function getSubscribedSubreddits(token) {
 function getSavedPosts(token) {
   const oauthUri = "https://oauth.reddit.com/";
   const path = "/user/mushfiq_814/saved";
+  const query = "?limit=100";
 
   const header = {
     "Authorization" : "Bearer " + token
   }
 
-  return fetch(oauthUri+path, {
+  return fetch(oauthUri+path+query, {
     method: "GET",
     headers: header
   }).then(res => res.json())
@@ -105,37 +106,39 @@ function getSavedPosts(token) {
       
       // loop through each item
       results.forEach(element => {
-        // if it is an image post
-        if (element.kind=='t3') {
-          if (element.data.domain == 'gfycat.com') {
-            const str = element.data.url;
-            const gfycatUrlArray = str.split('https://gfycat.com/');
-            var imageUrl = 'https://gfycat.com/ifr/' + gfycatUrlArray[1];
-          } else {
-            var imageUrl = element.data.url;
-          }
-          
+        console.log(!element.data.over_18);
+        if (!element.data.over_18) {
+          // if it is a post
+          if (element.kind=='t3') {
+            if (element.data.domain == 'gfycat.com') {
+              const str = element.data.url;
+              const gfycatUrlArray = str.split('https://gfycat.com/');
+              var imageUrl = 'https://gfycat.com/ifr/' + gfycatUrlArray[1];
+            } else {
+              var imageUrl = element.data.url;
+            }
+            
 
-          output+=`
-          <div class="card">
-            <div class="card-body">
-            <h5 class="card-title">${element.data.title}</h5>
-            <img src="${imageUrl}">
-            </div>
-          </div>`;
-        } 
-        // if it is a text post
-        else if (element.kind=='t1') {
-          output+=`
-          <div class="card">
-            <div class="card-body">
-            <h5 class="card-title">${element.data.link_title}</h5>
-            <p class="card-text">${element.data.body}</p>
-            </div>
-          </div>`;
-        }  
-      })
-      
+            output+=`
+            <div class="card">
+              <div class="card-body">
+              <h5 class="card-title">${element.data.title}</h5>
+              <img src="${imageUrl}">
+              </div>
+            </div>`;
+          } 
+          // if it is a comment
+          else if (element.kind=='t1') {
+            output+=`
+            <div class="card">
+              <div class="card-body">
+              <h5 class="card-title">${element.data.link_title}</h5>
+              <p class="card-text">${element.data.body}</p>
+              </div>
+            </div>`;
+          }
+        }         
+      })      
       output+= '</div>';
       document.getElementById('results').innerHTML = output;
     })
