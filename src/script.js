@@ -1,7 +1,7 @@
 // import environment variables
 // REMEMBER to put the required values into .config/config.js
 // Refer to .config/config.example.js for structure
-import ENV_VARS from './.config/config.js';
+import ENV_VARS from '../.config/config.js';
 
 // check if redirected
 const url = new URLSearchParams(window.location.search);
@@ -168,5 +168,5 @@ function redirectReddit() {
 
   const repairedUri = completeUri.replace(/[\s\n]/g, '');
 
-  window.location.replace(repairedUri,"_blank");
+  window.location.replace(repairedUri);
 }
