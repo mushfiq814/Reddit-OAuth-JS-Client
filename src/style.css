@@ -5,7 +5,9 @@
 }
 
 img {
-  width: 100% !important;
+  max-width: 100% !important;
+  max-height: 400px !important;
+  background-size: cover;
 }
 
 .navbar {
@@ -14,7 +16,6 @@ img {
   font-weight: 900;
   background: #EFA00B;
   color: #fff;
-  width: 100%;
 }
 
 .container {
@@ -42,28 +43,24 @@ img {
 .btn:hover {
   background: #591F0A;  
   border-color:#591F0A;
+  color: #fff;
   cursor: pointer;
 }
 
+.card {
+  border: none;
+}
 
-.card-columns {
+/* .card-columns {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-.card {
-  padding: 30px;
-  margin: 10px;
-}
-
-/* .card-body {
-
-}
-
 .card-title {
-
+  font-size: 1.2rem;
+  padding: 10px 0;
 }
 
 .card-text {
-
+  padding: 10px 0;
 } */

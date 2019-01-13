@@ -3,6 +3,9 @@
 // Refer to .config/config.example.js for structure
 import ENV_VARS from '../.config/config.js';
 
+var after = '';
+var token = '';
+
 // check if redirected
 const url = new URLSearchParams(window.location.search);
 if (url.has('code')) getAcessToken(url.get('code'));
@@ -12,6 +15,13 @@ const authButton = document.getElementById('authButton');
 authButton.addEventListener('click', (e) => {
   e.preventDefault();
   redirectReddit();
+})
+
+// load more
+const loadMoreBtn = document.getElementById('load-more-btn');
+loadMoreBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  getSavedPosts(token);
 })
 
 /**
@@ -40,6 +50,7 @@ function getAcessToken(code) {
     body: form
   }).then(res => res.json())
     .then(data => {
+      token = data.access_token;
       // getSubscribedSubreddits(data.access_token);
       getSavedPosts(data.access_token);
     })
@@ -88,28 +99,52 @@ function getSubscribedSubreddits(token) {
 function getSavedPosts(token) {
   const oauthUri = "https://oauth.reddit.com/";
   const path = "/user/mushfiq_814/saved";
-  const query = "?limit=100";
+  let query = "?limit=100";
 
   const header = {
     "Authorization" : "Bearer " + token
   }
+
+  if (after.length > 0) query += ('&after=' + after.toString());
 
   return fetch(oauthUri+path+query, {
     method: "GET",
     headers: header
   }).then(res => res.json())
     .then(data => {
+      after = data.data.after;
       var results = data.data.children;
-      console.log(results);
+      // console.log(results);
 
       let output = '<div class="card-columns">';
       
       // loop through each item
       results.forEach(element => {
-        console.log(!element.data.over_18);
         if (!element.data.over_18) {
+
+          // create card
+          var card = document.createElement('div');
+          card.classList.add('card');
+
+          // create card Body
+          var cardBody = document.createElement('div');
+          cardBody.classList.add('card-body');
+
+          // card Title
+          var cardTitle = document.createElement('h5');
+          cardTitle.classList.add('card-title');
+          cardTitle.innerText = element.data.title;
+
+          // card Text
+          var cardText = document.createElement('p');
+          cardText.classList.add('card-text');          
+
+          cardText.innerText = element.data.body ? truncateText(element.data.body,100) : 'nothing to show';
+
           // if it is a post
           if (element.kind=='t3') {
+
+            // for gfycats only
             if (element.data.domain == 'gfycat.com') {
               const str = element.data.url;
               const gfycatUrlArray = str.split('https://gfycat.com/');
@@ -117,30 +152,26 @@ function getSavedPosts(token) {
             } else {
               var imageUrl = element.data.url;
             }
-            
 
-            output+=`
-            <div class="card">
-              <div class="card-body">
-              <h5 class="card-title">${element.data.title}</h5>
-              <img src="${imageUrl}">
-              </div>
-            </div>`;
+            var imgElement = document.createElement('img');
+            imgElement.src = imageUrl
+
+            cardBody.appendChild(cardTitle);
+            cardBody.appendChild(cardText);
+            cardBody.appendChild(imgElement);                       
           } 
           // if it is a comment
           else if (element.kind=='t1') {
-            output+=`
-            <div class="card">
-              <div class="card-body">
-              <h5 class="card-title">${element.data.link_title}</h5>
-              <p class="card-text">${element.data.body}</p>
-              </div>
-            </div>`;
+            cardBody.appendChild(cardTitle);
+            cardBody.appendChild(cardText);
           }
+          
+          card.appendChild(cardBody); 
+          var cardColumn = document.getElementById('cardColumns');
+          cardColumn.appendChild(card);
+          document.getElementById('results').appendChild(cardColumn);
         }         
-      })      
-      output+= '</div>';
-      document.getElementById('results').innerHTML = output;
+      })
     })
     .catch(err => console.log('Error: ' + err))
 }
@@ -172,4 +203,15 @@ function redirectReddit() {
   const repairedUri = completeUri.replace(/[\s\n]/g, '');
 
   window.location.replace(repairedUri);
+}
+
+/**
+ * Truncate Text
+ * @param {*} text text to truncate
+ * @param {*} limit char limit to next end of word
+ */
+function truncateText(text, limit) {
+  const shortened = text.indexOf(' ', limit);
+  if (shortened == -1) return text;
+  return text.substring(0, shortened);
 }
