@@ -3,13 +3,16 @@
 // Refer to .config/config.example.js for structure
 import ENV_VARS from '../.config/config.js';
 
-var after = '';
-var token = '';
+let after = '';
+let token = '';
+let refreshToken = '';
 
 // check if redirected
 const url = new URLSearchParams(window.location.search);
+if (refreshToken.length>0) getAcessToken(refreshToken);
 if (url.has('code')) getAcessToken(url.get('code'));
 
+// BUTTONS
 // sign in to reddit
 const authButton = document.getElementById('authButton');
 authButton.addEventListener('click', (e) => {
@@ -25,6 +28,35 @@ loadMoreBtn.addEventListener('click', (e) => {
 })
 
 /**
+ * redirect to reddit authorization url
+ */
+function redirectReddit() {
+  const authUri = 'https://www.reddit.com/api/v1/authorize'
+  const scope = 'history,mysubreddits'
+
+  const authUriparams = {
+    'client_id' : ENV_VARS.CLIENT_ID,
+    'response_type' : 'code',
+    'state':'rstr',
+    'redirect_uri': ENV_VARS.REDIRECT_URI,
+    'duration' : 'permanent',
+    'scope': scope
+  }
+
+  const completeUri = `${authUri}?
+  client_id=${authUriparams.client_id}&
+  response_type=${authUriparams.response_type}&
+  state=${authUriparams.state}&
+  redirect_uri=${authUriparams.redirect_uri}&
+  duration=${authUriparams.duration}&
+  scope=${authUriparams.scope}`
+
+  const repairedUri = completeUri.replace(/[\s\n]/g, '');
+
+  window.location.replace(repairedUri);
+}
+
+/**
  * function to get Access Token
  * @param {*} code access code from reddit
  */
@@ -35,10 +67,13 @@ function getAcessToken(code) {
 
   var form = new FormData();
   form.append('code', code);
-  form.append('grant_type', 'authorization_code');
-  form.append('redirect_uri', ENV_VARS.REDIRECT_URI);
-  // form.append('grant_type', 'authorization_code');
-  // form.append('refresh_token', '25858625-Vvj1N42E7a__8fOJ7OhKhDhpF4Q');
+  if (refreshToken == '') {
+    form.append('grant_type', 'authorization_code');
+    form.append('redirect_uri', ENV_VARS.REDIRECT_URI);
+  } else {
+    form.append('grant_type', 'refresh_token');
+    form.append('refresh_token', refreshToken);
+  }
 
   const header = {
     "Authorization" : "Basic " + basicAuthHeaderEncoded
@@ -50,7 +85,12 @@ function getAcessToken(code) {
     body: form
   }).then(res => res.json())
     .then(data => {
+      console.log(data)
       token = data.access_token;
+      const refreshToken = data.refresh_token;
+      const expiresIn = data.expires_in;
+      console.log(`refreshToken: ${refreshToken}`);
+      console.log(`expiresIn: ${expiresIn} s`);
       // getSubscribedSubreddits(data.access_token);
       getSavedPosts(data.access_token);
     })
@@ -115,13 +155,11 @@ function getSavedPosts(token) {
       after = data.data.after;
       var results = data.data.children;
       // console.log(results);
-
-      let output = '<div class="card-columns">';
       
       // loop through each item
       results.forEach(element => {
         if (!element.data.over_18) {
-
+          console.log(element);
           // create card
           var card = document.createElement('div');
           card.classList.add('card');
@@ -129,6 +167,10 @@ function getSavedPosts(token) {
           // create card Body
           var cardBody = document.createElement('div');
           cardBody.classList.add('card-body');
+
+          // create link to post
+          var anchorTag = document.createElement('a');
+          anchorTag.href = "https://www.reddit.com" + element.data.permalink;
 
           // card Title
           var cardTitle = document.createElement('h5');
@@ -143,22 +185,28 @@ function getSavedPosts(token) {
 
           // if it is a post
           if (element.kind=='t3') {
-
+            anchorTag.appendChild(cardTitle);
+            cardBody.appendChild(anchorTag);
+            cardBody.appendChild(cardText);
             // for gfycats only
             if (element.data.domain == 'gfycat.com') {
               const str = element.data.url;
               const gfycatUrlArray = str.split('https://gfycat.com/');
               var imageUrl = 'https://gfycat.com/ifr/' + gfycatUrlArray[1];
+              var imgElement = document.createElement('img');
+              imgElement.src = imageUrl;
+              cardBody.appendChild(imgElement); 
             } else {
-              var imageUrl = element.data.url;
-            }
-
-            var imgElement = document.createElement('img');
-            imgElement.src = imageUrl
-
-            cardBody.appendChild(cardTitle);
-            cardBody.appendChild(cardText);
-            cardBody.appendChild(imgElement);                       
+              var preview = element.data.preview;
+              if (preview) {
+                var previewUrl = preview.images[0].source.url;
+                var newPreviewUrl = previewUrl.replace('amp;','');
+                while (newPreviewUrl.indexOf('amp;')>0) {newPreviewUrl = newPreviewUrl.replace('amp;','');}
+                var imgElement = document.createElement('img');
+                // imgElement.src = newPreviewUrl;
+                cardBody.appendChild(imgElement);   
+              } 
+            }                     
           } 
           // if it is a comment
           else if (element.kind=='t1') {
@@ -170,39 +218,12 @@ function getSavedPosts(token) {
           var cardColumn = document.getElementById('cardColumns');
           cardColumn.appendChild(card);
           document.getElementById('results').appendChild(cardColumn);
-        }         
+
+        }
       })
+      // var bricklayer = new Bricklayer(document.getElementById('cardColumns'));
     })
     .catch(err => console.log('Error: ' + err))
-}
-
-/**
- * redirect to reddit authorization url
- */
-function redirectReddit() {
-  const authUri = 'https://www.reddit.com/api/v1/authorize'
-  const scope = 'history,mysubreddits'
-
-  const authUriparams = {
-    'client_id' : ENV_VARS.CLIENT_ID,
-    'response_type' : 'code',
-    'state':'rstr',
-    'redirect_uri': ENV_VARS.REDIRECT_URI,
-    'duration' : 'permanent',
-    'scope': scope
-  }
-
-  const completeUri = `${authUri}?
-  client_id=${authUriparams.client_id}&
-  response_type=${authUriparams.response_type}&
-  state=${authUriparams.state}&
-  redirect_uri=${authUriparams.redirect_uri}&
-  duration=${authUriparams.duration}&
-  scope=${authUriparams.scope}`
-
-  const repairedUri = completeUri.replace(/[\s\n]/g, '');
-
-  window.location.replace(repairedUri);
 }
 
 /**
@@ -213,5 +234,5 @@ function redirectReddit() {
 function truncateText(text, limit) {
   const shortened = text.indexOf(' ', limit);
   if (shortened == -1) return text;
-  return text.substring(0, shortened);
+  return text.substring(0, shortened) + "...";
 }
