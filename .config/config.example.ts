@@ -4,8 +4,8 @@
  * You can get credentials from "https://www.reddit.com/prefs/apps"
  */
 
-export default {
-  "CLIENT_ID" : "YOUR CLIENT_ID",
-  "CLIENT_SECRET" : "YOUR CLIENT_SECRET",
-  "REDIRECT_URI" : "YOUR REDIRECT_URI"
+export interface Credentials {
+  CLIENT_ID: string;
+  CLIENT_SECRET: string;
+  REDIRECT_URI: string
 }

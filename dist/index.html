@@ -4,16 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-  <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/bricklayer/0.4.2/bricklayer.min.js"></script>
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bricklayer/0.4.2/bricklayer.min.css"> -->
+  <link 
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+    integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+    crossorigin="anonymous"
+  >
   <link rel="stylesheet" href="style.css">
-  <title>Reddit Oauth 2.0</title>
+  <title>Red0ne</title>
 </head>
 <body>
   <nav class="navbar">
-    <span class="navbar-brand">reddit API</span>
-    <span><button id='authButton' class="btn">Sign In</button></span>
+    <span class="navbar-brand">red0ne</span>
+    <span><button id="authButton" class="btn">Sign In</button></span>
   </nav>
   <div id="search-container" class="container">
     <div class="results-view">
@@ -21,8 +24,8 @@
         <div class="card-columns bricklayer" id="cardColumns"></div>
       </div>
     </div>
-    <button id='load-more-btn' class="btn">Load More</button>
+    <button id="load-more-btn" class="btn">Load More</button>
   </div>
-  <script src="script.js" type="module"></script>
+  <script defer src="bundle.js" type="module"></script>
 </body>
 </html>
